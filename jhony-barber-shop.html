@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Jhony Barber Shop</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Barlow:wght@300;400;500&family=Bebas+Neue&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black: #0a0a0a;
+      --white: #f5f3ee;
+      --gray: #1a1a1a;
+      --mid: #888;
+      --light: #ccc;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Barlow', sans-serif;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* Custom cursor */
+    .cursor {
+      position: fixed;
+      width: 12px; height: 12px;
+      background: var(--white);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s ease, width 0.2s, height 0.2s, background 0.2s;
+      mix-blend-mode: difference;
+    }
+    .cursor.grow { width: 40px; height: 40px; }
+
+    /* Noise overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 999;
+      opacity: 0.3;
+    }
+
+    /* ─── HEADER ─── */
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 48px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      background: rgba(10,10,10,0.85);
+      backdrop-filter: blur(10px);
+    }
+
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 0.3em;
+      color: var(--white);
+      text-decoration: none;
+    }
+    .logo span { color: var(--mid); }
+
+    nav a {
+      color: var(--light);
+      text-decoration: none;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-left: 36px;
+      transition: color 0.3s;
+    }
+    nav a:hover { color: var(--white); }
+
+    /* ─── HERO ─── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 48px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 70% at 70% 40%, rgba(255,255,255,0.04) 0%, transparent 70%),
+        linear-gradient(160deg, #111 0%, #0a0a0a 100%);
+    }
+
+    .hero-lines {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+    .hero-lines span {
+      position: absolute;
+      display: block;
+      background: rgba(255,255,255,0.03);
+    }
+    .hero-lines span:nth-child(1) { width: 1px; height: 100%; left: 33%; top: 0; }
+    .hero-lines span:nth-child(2) { width: 1px; height: 100%; left: 66%; top: 0; }
+    .hero-lines span:nth-child(3) { width: 100%; height: 1px; top: 50%; left: 0; }
+
+    .hero-scissors {
+      position: absolute;
+      top: 50%;
+      right: 10%;
+      transform: translateY(-50%) rotate(-20deg);
+      font-size: 18rem;
+      opacity: 0.03;
+      line-height: 1;
+      user-select: none;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(-50%) rotate(-20deg); }
+      50%       { transform: translateY(-53%) rotate(-17deg); }
+    }
+
+    .hero-tag {
+      font-size: 0.7rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--mid);
+      margin-bottom: 24px;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.2s forwards;
+    }
+
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3.5rem, 10vw, 8rem);
+      font-weight: 900;
+      line-height: 0.95;
+      letter-spacing: -0.02em;
+      color: var(--white);
+      opacity: 0;
+      animation: fadeUp 0.8s 0.4s forwards;
+    }
+    .hero-title em {
+      font-style: italic;
+      color: var(--mid);
+    }
+
+    .hero-sub {
+      margin-top: 28px;
+      font-size: 0.9rem;
+      font-weight: 300;
+      color: var(--mid);
+      letter-spacing: 0.05em;
+      max-width: 380px;
+      line-height: 1.7;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.6s forwards;
+    }
+
+    .hero-cta {
+      margin-top: 48px;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.8s forwards;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--white);
+      color: var(--black);
+      padding: 16px 36px;
+      font-family: 'Barlow', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: none;
+      cursor: none;
+      transition: background 0.3s, transform 0.2s;
+    }
+    .btn-primary:hover { background: var(--light); transform: translateY(-2px); }
+
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: transparent;
+      color: var(--white);
+      padding: 16px 36px;
+      font-family: 'Barlow', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,0.2);
+      cursor: none;
+      transition: border-color 0.3s, transform 0.2s;
+    }
+    .btn-outline:hover { border-color: var(--white); transform: translateY(-2px); }
+
+    .whatsapp-icon { font-size: 1.1rem; }
+
+    /* ─── DIVIDER ─── */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 0 48px;
+      margin: 80px 0;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.08);
+    }
+    .divider span {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.5em;
+      color: var(--mid);
+    }
+
+    /* ─── SECTION TITLES ─── */
+    .section-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--mid);
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 700;
+      line-height: 1.1;
+      color: var(--white);
+    }
+    .section-title em { font-style: italic; color: var(--mid); }
+
+    /* ─── SERVICES ─── */
+    #servicos {
+      padding: 0 48px 100px;
+    }
+
+    .services-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 60px;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 2px;
+    }
+
+    .service-card {
+      background: var(--gray);
+      padding: 48px 40px;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.4s;
+      cursor: none;
+    }
+    .service-card::before {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 100%; height: 2px;
+      background: var(--white);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s ease;
+    }
+    .service-card:hover { background: #222; }
+    .service-card:hover::before { transform: scaleX(1); }
+
+    .service-card.featured {
+      background: var(--white);
+      color: var(--black);
+    }
+    .service-card.featured .service-name,
+    .service-card.featured .service-desc,
+    .service-card.featured .service-tag { color: var(--black) !important; }
+    .service-card.featured .service-price { color: var(--black); }
+    .service-card.featured::before { background: var(--black); }
+
+    .service-icon {
+      font-size: 2rem;
+      margin-bottom: 32px;
+      display: block;
+      opacity: 0.6;
+    }
+
+    .service-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+
+    .service-desc {
+      font-size: 0.8rem;
+      color: var(--mid);
+      letter-spacing: 0.05em;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    .service-price {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.8rem;
+      letter-spacing: 0.05em;
+      color: var(--white);
+    }
+    .service-price span {
+      font-family: 'Barlow', sans-serif;
+      font-size: 1rem;
+      font-weight: 300;
+      opacity: 0.5;
+    }
+
+    .service-tag {
+      position: absolute;
+      top: 20px; right: 20px;
+      font-size: 0.6rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--mid);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 4px 10px;
+    }
+    .service-tag.highlight {
+      border-color: var(--black);
+      color: var(--black);
+      background: rgba(0,0,0,0.05);
+    }
+
+    /* ─── PACOTE MENSAL ─── */
+    .package-section {
+      margin: 2px 0 0;
+    }
+
+    .package-card {
+      background: var(--white);
+      color: var(--black);
+      padding: 60px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 40px;
+      position: relative;
+      overflow: hidden;
+      cursor: none;
+    }
+    .package-card::after {
+      content: 'MENSAL';
+      position: absolute;
+      right: -40px;
+      top: 50%;
+      transform: translateY(-50%) rotate(90deg);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 6rem;
+      opacity: 0.06;
+      letter-spacing: 0.1em;
+      white-space: nowrap;
+    }
+
+    .package-left { flex: 1; min-width: 240px; }
+    .package-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: #666;
+      margin-bottom: 10px;
+    }
+    .package-name {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900;
+      color: var(--black);
+      line-height: 1.1;
+    }
+    .package-includes {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .package-includes li {
+      list-style: none;
+      font-size: 0.85rem;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .package-includes li::before {
+      content: '—';
+      color: #888;
+      font-size: 0.7rem;
+    }
+
+    .package-right { text-align: right; }
+    .package-price {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 5rem;
+      color: var(--black);
+      line-height: 1;
+    }
+    .package-price sup { font-size: 1.8rem; vertical-align: top; margin-top: 10px; }
+    .package-savings {
+      font-size: 0.75rem;
+      color: #666;
+      letter-spacing: 0.1em;
+      margin-top: 8px;
+    }
+
+    /* ─── INFO / LOCALIZAÇÃO ─── */
+    #contato {
+      padding: 100px 48px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .info-block { }
+    .info-item {
+      padding: 28px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+    .info-item:first-child { border-top: 1px solid rgba(255,255,255,0.06); }
+    .info-icon {
+      font-size: 1.1rem;
+      opacity: 0.4;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .info-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--mid);
+      margin-bottom: 4px;
+    }
+    .info-value {
+      font-size: 0.95rem;
+      color: var(--white);
+      line-height: 1.6;
+    }
+
+    .cta-block {
+      background: var(--gray);
+      padding: 60px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-block::before {
+      content: '✂';
+      position: absolute;
+      top: -20px; left: -20px;
+      font-size: 10rem;
+      opacity: 0.03;
+      transform: rotate(-30deg);
+    }
+    .cta-block h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+    .cta-block p {
+      color: var(--mid);
+      font-size: 0.85rem;
+      margin-bottom: 36px;
+      line-height: 1.7;
+    }
+
+    .whatsapp-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: #fff;
+      color: #000;
+      padding: 18px 40px;
+      font-family: 'Barlow', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: none;
+      transition: background 0.3s, transform 0.2s;
+      position: relative;
+      z-index: 1;
+    }
+    .whatsapp-btn:hover { background: var(--light); transform: translateY(-3px); }
+    .whatsapp-btn .wa-icon {
+      width: 22px; height: 22px;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z'/%3E%3C/svg%3E") no-repeat center/contain;
+      flex-shrink: 0;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 40px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    footer .logo { font-size: 1.1rem; }
+    footer p {
+      font-size: 0.7rem;
+      color: var(--mid);
+      letter-spacing: 0.1em;
+    }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 768px) {
+      header { padding: 20px 24px; }
+      nav { display: none; }
+      .hero { padding: 0 24px 60px; }
+      #servicos { padding: 0 24px 80px; }
+      .services-header { margin-bottom: 40px; }
+      #contato { grid-template-columns: 1fr; gap: 40px; padding: 60px 24px; }
+      .cta-block { padding: 40px 28px; }
+      .package-card { padding: 40px 28px; }
+      .package-right { text-align: left; }
+      footer { padding: 28px 24px; }
+      .divider { padding: 0 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor" id="cursor"></div>
+
+  <!-- HEADER -->
+  <header>
+    <a href="#" class="logo">JHONY <span>BARBER</span></a>
+    <nav>
+      <a href="#servicos">Serviços</a>
+      <a href="#contato">Contato</a>
+      <a href="https://wa.me/5554963704523" target="_blank">WhatsApp</a>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-lines">
+      <span></span><span></span><span></span>
+    </div>
+    <div class="hero-scissors">✂</div>
+
+    <div style="position:relative; z-index:2;">
+      <p class="hero-tag">Est. — Rua Domingos Bianco</p>
+      <h1 class="hero-title">
+        Jhony<br><em>Barber</em><br>Shop
+      </h1>
+      <p class="hero-sub">
+        Precisão no corte. Estilo no detalhe.<br>
+        A barbearia que transforma sua aparência.
+      </p>
+      <div class="hero-cta">
+        <a href="https://wa.me/5554963704523?text=Ol%C3%A1!%20Quero%20agendar%20um%20hor%C3%A1rio." target="_blank" class="btn-primary">
+          <span class="whatsapp-icon">💬</span> Agendar pelo WhatsApp
+        </a>
+        <a href="#servicos" class="btn-outline">Ver Preços</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- DIVIDER -->
+  <div class="divider"><span>Nossos Serviços</span></div>
+
+  <!-- SERVICES -->
+  <section id="servicos">
+    <div class="services-header reveal">
+      <div>
+        <p class="section-label">O que oferecemos</p>
+        <h2 class="section-title">Cortes &<br><em>Acabamentos</em></h2>
+      </div>
+      <a href="https://wa.me/5554963704523?text=Ol%C3%A1!%20Quero%20agendar%20um%20hor%C3%A1rio." target="_blank" class="btn-outline">Agendar agora →</a>
+    </div>
+
+    <div class="services-grid">
+      <!-- Cabelo -->
+      <div class="service-card reveal">
+        <span class="service-icon">✂️</span>
+        <p class="service-name">Cabelo</p>
+        <p class="service-desc">Corte completo com finalização e estilo personalizado.</p>
+        <div class="service-price">R$40<span>/corte</span></div>
+      </div>
+
+      <!-- Barba -->
+      <div class="service-card reveal" style="transition-delay:0.1s">
+        <span class="service-icon">🪒</span>
+        <p class="service-name">Barba</p>
+        <p class="service-desc">Modelagem e acabamento com navalha e produtos premium.</p>
+        <div class="service-price">R$35<span>/barba</span></div>
+      </div>
+
+      <!-- Combo -->
+      <div class="service-card featured reveal" style="transition-delay:0.2s">
+        <span class="service-tag highlight">Popular</span>
+        <span class="service-icon">⭐</span>
+        <p class="service-name">Cabelo + Barba</p>
+        <p class="service-desc">O combo completo para um visual impecável de cima a baixo.</p>
+        <div class="service-price">R$70<span>/combo</span></div>
+      </div>
+    </div>
+
+    <!-- Pacote Mensal -->
+    <div class="package-section reveal" style="transition-delay:0.3s">
+      <div class="package-card">
+        <div class="package-left">
+          <p class="package-label">Melhor custo-benefício</p>
+          <h3 class="package-name">Pacote<br>Mensal</h3>
+          <ul class="package-includes">
+            <li>4 cortes de cabelo</li>
+            <li>1 barba inclusa</li>
+            <li>Atendimento prioritário</li>
+          </ul>
+        </div>
+        <div class="package-right">
+          <div class="package-price"><sup>R$</sup>130</div>
+          <p class="package-savings">Economize R$30 vs avulso</p>
+          <a href="https://wa.me/5554963704523?text=Ol%C3%A1!%20Tenho%20interesse%20no%20Pacote%20Mensal." target="_blank" class="btn-primary" style="margin-top:24px; display:inline-flex;">
+            <span class="whatsapp-icon">💬</span> Assinar Pacote
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DIVIDER -->
+  <div class="divider"><span>Localização & Contato</span></div>
+
+  <!-- CONTATO -->
+  <section id="contato">
+    <div class="info-block reveal">
+      <p class="section-label">Onde estamos</p>
+      <h2 class="section-title" style="margin-bottom:48px">Venha nos<br><em>Visitar</em></h2>
+
+      <div class="info-item">
+        <span class="info-icon">📍</span>
+        <div>
+          <p class="info-label">Endereço</p>
+          <p class="info-value">Rua Domingos Bianco</p>
+        </div>
+      </div>
+      <div class="info-item">
+        <span class="info-icon">📱</span>
+        <div>
+          <p class="info-label">Telefone / WhatsApp</p>
+          <p class="info-value">+55 54 9637-0452</p>
+        </div>
+      </div>
+      <div class="info-item">
+        <span class="info-icon">🕐</span>
+        <div>
+          <p class="info-label">Atendimento</p>
+          <p class="info-value">Seg – Sex: 9h às 20h<br>Sábado: 9h às 18h</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta-block reveal" style="transition-delay:0.2s">
+      <h3>Fale pelo<br>WhatsApp</h3>
+      <p>
+        Agende seu horário de forma rápida e fácil.<br>
+        Clique no botão e inicie uma conversa agora mesmo.
+      </p>
+      <a href="https://wa.me/5554963704523?text=Ol%C3%A1!%20Quero%20agendar%20um%20hor%C3%A1rio%20na%20Jhony%20Barber%20Shop." target="_blank" class="whatsapp-btn">
+        <span class="wa-icon"></span>
+        Conversar no WhatsApp
+      </a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <a href="#" class="logo">JHONY <span>BARBER</span></a>
+    <p>Rua Domingos Bianco — +55 54 9637-0452</p>
+    <p>© 2025 Jhony Barber Shop</p>
+  </footer>
+
+  <script>
+    // Custom cursor
+    const cursor = document.getElementById('cursor');
+    document.addEventListener('mousemove', e => {
+      cursor.style.left = e.clientX + 'px';
+      cursor.style.top  = e.clientY + 'px';
+    });
+    document.querySelectorAll('a, button, .service-card').forEach(el => {
+      el.addEventListener('mouseenter', () => cursor.classList.add('grow'));
+      el.addEventListener('mouseleave', () => cursor.classList.remove('grow'));
+    });
+
+    // Scroll reveal
+    const revealEls = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    revealEls.forEach(el => observer.observe(el));
+
+    // Smooth anchor scroll
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
